@@ -1,3 +1,50 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
+import Auth from '../../lib/auth.mjs'
+import MongoClient from '../../lib/mongo-client.mjs'
+import URL from '../../lib/url.mjs'
 
-export default function App( server: ServerResponse<IncomingMessage> & { req: IncomingMessage }, data: { [key: string]: any } ) {}
+type server = ServerResponse<IncomingMessage> & {
+    req: IncomingMessage
+}
+
+interface DataProps {
+    userName?: string,
+    password?: string,
+    'User Info'?: {
+        fullName?: string,
+        accountNumber?: string,
+        emailAddress?: string,
+        registrationNumber?: string
+    }
+}
+
+export default function App( server: server, data: DataProps ) {
+    Auth.authenticate(
+        server,
+        () => update( server, data )
+    )
+}
+
+function update( server: server, data: DataProps ) {
+    const url = new URL( server.req )
+    const id = url.identifier( 'accounts' )
+
+    const mongoClient = new MongoClient()
+
+    mongoClient.connect((client) => {
+        client.db().collection( 'Account Login' )
+        .updateOne(
+            {
+                _id: id
+            },
+            data
+        )
+        .then((value) => {
+            if (!(value.acknowledged)) return server.writeHead( 500 ).end()
+
+            server.end(
+                JSON.stringify( value )
+            )
+        })
+    })
+}

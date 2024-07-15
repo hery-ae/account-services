@@ -3,7 +3,7 @@ import { env } from 'node:process'
 import Route from './lib/route.mjs'
 import URL from './lib/url.mjs'
 import Home from './app/index.mjs'
-import Accounts from './app/accounts/index.mjs'
+import Index from './app/accounts/index.mjs'
 import Login from './app/accounts/login.mjs'
 import Logout from './app/accounts/logout.mjs'
 import Create from './app/accounts/create.mjs'
@@ -18,9 +18,19 @@ const route = new Route()
 
 route.setRoute( '/', 'GET', Home )
 
+route.setRoute( '/accounts', 'GET', Index )
+
 route.setRoute( '/accounts/login', 'POST', Login )
 
 route.setRoute( '/accounts/logout', 'HEAD', Logout )
+
+route.setRoute( '/accounts/create', 'PUT', Create )
+
+route.setRoute( '/accounts/[0-9]+/find', 'GET', Find )
+
+route.setRoute( '/accounts/[0-9]+/update', 'PATCH', Update )
+
+route.setRoute( '/accounts/[0-9]+/delete', 'HEAD', Delete )
 
 /*
 * Serve

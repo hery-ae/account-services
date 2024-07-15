@@ -4,7 +4,7 @@ export default function App( server: ServerResponse<IncomingMessage> ) {
     server.end(
         JSON.stringify(
             {
-                status: 200
+                status: 'ok'
             }
         )
     )

@@ -8,52 +8,34 @@ type server = ServerResponse<IncomingMessage> & {
 }
 
 export default class Auth {
-    server: server
+    static authenticate( server: server, valid: () => void, invalid: () => void = () => server.writeHead( 403 ).end() ) {
+        if (!(server.req.headers.authorization) || !(server.req.headers.authorization.startsWith('Bearer'))) return invalid()
 
-    constructor( server: server ) {
-        this.server = server
-    }
+        const authorization = server.req.headers.authorization as string
+        const token = authorization.substring( String('Bearer ').length )
 
-    authenticate() {
-        return new Promise(
-            (resolve, reject) => {
-                if( !this.server.req.headers.authorization || !this.server.req.headers.authorization.startsWith('Bearer') ) {
-                    this.server.statusCode = 403
-                    reject()
-                }
+        try {
+            const payload = JWT.verify( token, env['SECRET_KEY'] as string ) as JwtPayload
 
-                const authorization = this.server.req.headers.authorization as string
-                const token = authorization.substring( String('Bearer ').length )
-
-                try {
-                    const payload = JWT.verify( token, env['SECRET_KEY'] as string ) as JwtPayload
-
-                    RedisClient().connect()
+            RedisClient().connect()
+            .then(
+                (client) => {
+                    client.hGet( payload.username.concat( ':' ).concat( payload.iat ), 'authenticated' )
                     .then(
-                        (client) => {
-                            client.hGet( payload.username.concat( ':' ).concat( payload.iat ), 'authenticated' )
-                            .then(
-                                (authenticated) => {
-                                    client.disconnect()
+                        (authenticated) => {
+                            client.disconnect()
 
-                                    if (authenticated) {
-                                        resolve( payload )
+                            if (!authenticated) return invalid()
 
-                                    } else {
-                                        this.server.statusCode = 403
-                                        reject()
-                                    }
-                                }
-                            )
+                            valid()
                         }
                     )
-
-                } catch (e) {
-                    this.server.statusCode = 403
-                    reject()
                 }
+            )
 
-            }
-        )
+        } catch (e) {
+            invalid()
+        }
+
     }
 }

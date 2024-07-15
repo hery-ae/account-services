@@ -4,16 +4,18 @@ import JWT, { JwtPayload } from 'jsonwebtoken'
 import { createClient as RedisClient } from 'redis'
 import Auth from '../../lib/auth.mjs'
 
-export default async function App( server: ServerResponse<IncomingMessage> & { req: IncomingMessage } ) {
-    const auth = new Auth( server )
+type server = ServerResponse<IncomingMessage> & {
+    req: IncomingMessage
+}
 
-    try {
-        await auth.authenticate()
+export default function App( server: server ) {
+    Auth.authenticate(
+        server,
+        () => logout( server )
+    )
+}
 
-    } catch (e) {
-        return server.end()
-    }
-
+async function logout( server: server ) {
     const authorization = server.req.headers.authorization as string
     const accessToken = authorization.substring( String('Bearer ').length )
 
