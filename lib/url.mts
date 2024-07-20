@@ -11,8 +11,9 @@ export default class URL {
     }
 
     identifier( collection: string ) {
-        const regExp: RegExp = new RegExp( collection.concat( '/(.+)/' ) )
+        const regExp = new RegExp( collection.concat( '/(.+?(/|$))' ) )
+        const match = this.pathname.match( regExp )
 
-        return this.pathname.match( regExp )?.at( -1 )
+        return match?.at( -2 )?.replace( match.at( -1 ) as string, '' )
     }
 }

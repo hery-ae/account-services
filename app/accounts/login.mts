@@ -37,7 +37,7 @@ export default function App( server: ServerResponse<IncomingMessage> & { req: In
 
                     const accessToken = JWT.sign(
                         {
-                            account_id: account?.accountId,
+                            _id: account?._id,
                             username: account?.userName,
                             email: account?.['User Info'].emailAddress
                         },

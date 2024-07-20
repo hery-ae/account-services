@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
+import { ObjectId } from 'mongodb'
 import Auth from '../../lib/auth.mjs'
 import MongoClient from '../../lib/mongo-client.mjs'
 import URL from '../../lib/url.mjs'
@@ -29,21 +30,34 @@ function update( server: server, data: DataProps ) {
     const url = new URL( server.req )
     const id = url.identifier( 'accounts' )
 
+    let objectId: ObjectId
+
+    try {
+        objectId = new ObjectId( id )
+
+    } catch (e) {
+        return server.writeHead( 404 ).end()
+    }
+
     const mongoClient = new MongoClient()
 
     mongoClient.connect((client) => {
         client.db().collection( 'Account Login' )
         .updateOne(
             {
-                _id: id
+                _id: objectId
             },
-            data
+            {
+                $set: data
+            }
         )
-        .then((value) => {
-            if (!(value.acknowledged)) return server.writeHead( 500 ).end()
+        .then((result) => {
+            if (!(result.matchedCount)) return server.writeHead( 404 ).end()
+
+            if (!(result.acknowledged)) return server.writeHead( 500 ).end()
 
             server.end(
-                JSON.stringify( value )
+                JSON.stringify( result )
             )
         })
     })

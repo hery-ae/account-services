@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
+import { ObjectId } from 'mongodb'
 import Auth from '../../lib/auth.mjs'
 import MongoClient from '../../lib/mongo-client.mjs'
 import URL from '../../lib/url.mjs'
@@ -18,14 +19,25 @@ function find( server: server ) {
     const url = new URL( server.req )
     const id = url.identifier( 'accounts' )
 
+    let objectId: ObjectId
+
+    try {
+        objectId = new ObjectId( id )
+
+    } catch (e) {
+        return server.writeHead( 404 ).end()
+    }
+
     const mongoClient = new MongoClient()
 
     mongoClient.connect((client) => {
         client.db().collection( 'Account Login' )
         .findOne({
-            _id: id
+            _id: objectId
         })
         .then((value) => {
+            if (!value) return server.writeHead( 404 ).end()
+
             server.end(
                 JSON.stringify( value )
             )
