@@ -37,11 +37,14 @@ export default function App( server: ServerResponse<IncomingMessage> & { req: In
 
                     const accessToken = JWT.sign(
                         {
-                            _id: account?._id,
+                            user_id: account?._id,
                             username: account?.userName,
                             email: account?.['User Info'].emailAddress
                         },
-                        env['SECRET_KEY'] as string
+                        env['SECRET_KEY'] as string,
+                        {
+                            expiresIn: 1800
+                        }
                     )
 
                     const { iat } = JWT.verify( accessToken, env['SECRET_KEY'] as string ) as JwtPayload
@@ -58,6 +61,7 @@ export default function App( server: ServerResponse<IncomingMessage> & { req: In
                             server.end(
                                 JSON.stringify(
                                     {
+                                        user_id: account?._id,
                                         access_token: accessToken,
                                         scheme: 'Bearer'
                                     }

@@ -26,11 +26,11 @@ route.setRoute( '/accounts/logout', 'HEAD', Logout )
 
 route.setRoute( '/accounts/create', 'PUT', Create )
 
-route.setRoute( '/accounts/[0-9a-zA-Z]{24}', 'GET', Find )
+route.setRoute( '/accounts/[0-9a-fA-F]{24}', 'GET', Find )
 
-route.setRoute( '/accounts/[0-9a-zA-Z]{24}/update', 'PATCH', Update )
+route.setRoute( '/accounts/[0-9a-fA-F]{24}/update', 'PATCH', Update )
 
-route.setRoute( '/accounts/[0-9a-zA-Z]{24}/delete', 'DELETE', Delete )
+route.setRoute( '/accounts/[0-9a-fA-F]{24}/delete', 'DELETE', Delete )
 
 /*
 * Serve

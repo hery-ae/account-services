@@ -19,14 +19,7 @@ function find( server: server ) {
     const url = new URL( server.req )
     const id = url.identifier( 'accounts' )
 
-    let objectId: ObjectId
-
-    try {
-        objectId = new ObjectId( id )
-
-    } catch (e) {
-        return server.writeHead( 404 ).end()
-    }
+    const objectId = new ObjectId( id )
 
     const mongoClient = new MongoClient()
 
